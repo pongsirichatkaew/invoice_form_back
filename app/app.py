@@ -1,4 +1,4 @@
-from config import *
+from Config.config import *
 from user_get import *
 
 @app.route('/connect_backend',methods = ['GET'])

@@ -4,6 +4,7 @@ from flask_mail import Mail, Message
 from flaskext.mysql import MySQL
 from functools import wraps
 from datetime import datetime,timedelta
+import requests
 import base64
 import json
 import jwt
@@ -31,7 +32,7 @@ mail = Mail(app)
 # ------------------------------------------------------
 app.config['MYSQL_DATABASE_USER'] = "root"
 app.config['MYSQL_DATABASE_PASSWORD'] = "promruFvgvl@"
-app.config['MYSQL_DATABASE_DB'] = 'TestPasailmon'
+app.config['MYSQL_DATABASE_DB'] = 'Approve_Debt_Reduction'
 app.config['MYSQL_DATABASE_HOST'] = '203.154.59.195'
 
 mysql = MySQL()
