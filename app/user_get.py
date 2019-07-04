@@ -1,39 +1,6 @@
 from Config.config import *
 
-# -------------------------------------------------------
-# @app.route('/api/v1/login', methods=['POST'])
-# @connect_sql()
-# def login(cursor):
-#     try:
-#         checkUser = json.loads(getLogin())
-#         f = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+checkUser['text']['userid'],headers= {'Authorization': 'a44ef9db-42c7-46a3-aea4-ee2fe6213ef3'})
-#         getName = f.json()
-#         if checkUser['text'] != 'fail' :
-#             sql = " SELECT per_id FROM useradmin WHERE emp_id = %s"
-#             cursor.execute(sql,(checkUser['text']['userid']))
-#             data = cursor.fetchall()
-#             columns = [column[0] for column in cursor.description]
-#             report = toJson(data, columns)
-#             if len(report) != 0 :
-#                 return jsonify({'message': 'success', "error_message": None, "result": {'user':getName['employee_detail'][0], 'permisstion': report[0]['per_id']}}),200
-#             else:
-#                 return jsonify({'message': 'success', "error_message": None, "result": {'user':getName['employee_detail'][0], 'permisstion':'1'}}),200
-#         else :
-#             return jsonify({'message': 'fail', "error_message":"no user", "result": None}),200
-#     except Exception as e:
-#         current_app.logger.info(e)
-#         return jsonify({'message': 'fail', "error_message": str(e), "result": None}),200
-# def getLogin():
-#     _data_new = request.json
-#     data_new = json.loads(decode(_data_new['data']))
-#     username = data_new['username']
-#     password = data_new['password']
-#     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/'+password,headers= {'Authorization': 'a44ef9db-42c7-46a3-aea4-ee2fe6213ef3'})
-#     if r:
-#         return json.dumps({'text':r.json()})
-#     else :
-#         return json.dumps({'text':'fail'})
-# --------------------------------------------------------
+# -----------------------login---------------------------------
 @app.route('/api/v2/login', methods=['POST'])
 @connect_sql()
 def test_login(cursor):
@@ -43,31 +10,83 @@ def test_login(cursor):
         else:
             username = request.json.get('username',None)
             password = request.json.get('password',None)
-            if username and password 
-            r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/'+password,headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
-            if r:
-                return json.dumps({'text':r.json()})
-                sql = """INSERT INTO `user` VALUES (%s,%s,)
+            if not username or not password:
+                return jsonify({"msg":"Missing parameter"}), 400
             else:
-                # print('---------------------------------------------------',json.dumps({'text':r.json()}))
-                return json.dumps({'text':'fail'})
+                r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/'+password,headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                if r:
+                    raw = r.text
+                    raw = json.loads(raw)
+                    sql = "SELECT role FROM user WHERE userid = %s"
+                    if cursor.execute(sql,(raw['userid'])):
+                        return "1"
+                    else:
+                        sql = """INSERT INTO `user`(name,lastname,userid) VALUES (%s,%s,%s)"""
+                        cursor.execute(sql,(raw['name'],raw['lastname'],raw['userid']))
+                        return "2"
+                else:
+                    return 'not nave user'
     except Exception as e:
         print ('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# --------------------------------------------------------
-@app.route('/jwt',methods=['POST'])
+# # ---------------------menu-----------------------------------
+@app.route('/api/v2/menu', methods=["POST"])
 @connect_sql()
-def jwt_ex(cursor):
-    JWT_SECRET = 'secret'
-    JWT_ALGORITHM = 'HS256'
-    JWT_EXP_DELTA_SECONDS = 20
-    payload = {
-        'user_id' : 'kkk',
-        'exp' : datetime.utcnow() + timedelta(seconds = JWT_EXP_DELTA_SECONDS)
-    }
-    jwt_token = jwt.encode(payload, JWT_SECRET,JWT_ALGORITHM)
-    return json_response({'token':jwt_token.decode('utf-8')})
+def menu(cursor):
+    try:
+        if not request.is_json:
+            return jsonify({"msg":"Missing JSON in request"}), 400
+        else:
+            user_id = request.json.get('user_id',None)
+            if not user_id:
+                return jsonify({"msg":"Missing parameter"}), 400
+            else:
+                sql = """SELECT role FROM user WHERE userid = %s"""
+                if cursor.execute(sql,(user_id))
+                    
+                
+    except Exception as e:
+        print ('error ===', e)
+        current_app.logger.info(e)
+        return jsonify(str(e))
+# # ----------------------check_status_user---------------------------
+# @app.route('/api/v2/check')
+
+# # -----------------------------insert from-------------------
+# @app.route('/api/v2/insert_from', methods=["POST"])
+# @connect_sql()
+# def insert_from(cursor):
+#     try:
+
+#     except Exception as e:
+#         print ('error ===', e)
+#         current_app.logger.info(e)
+#         return jsonify(str(e))
+# # ------------------------------update from-----------------------------
+# @app.route('/api/v2/insert_from', methods=["POST"])
+# @connect_sql()
+# def insert_from(cursor):
+#     try:
+
+#     except Exception as e:
+#         print ('error ===', e)
+#         current_app.logger.info(e)
+#         return jsonify(str(e))
+# # ----------------------------approve from--------------------------
+
+# @app.route('/jwt',methods=['POST'])
+# @connect_sql()
+# def jwt_ex(cursor):
+#     JWT_SECRET = 'secret'
+#     JWT_ALGORITHM = 'HS256'
+#     JWT_EXP_DELTA_SECONDS = 20
+#     payload = {
+#         'user_id' : 'kkk',
+#         'exp' : datetime.utcnow() + timedelta(seconds = JWT_EXP_DELTA_SECONDS)
+#     }
+#     jwt_token = jwt.encode(payload, JWT_SECRET,JWT_ALGORITHM)
+#     return json_response({'token':jwt_token.decode('utf-8')})
 
 @app.route('/getUserID/<id>',methods = ['GET'])
 @connect_sql()
@@ -202,3 +221,39 @@ def index():
    msg.html = "<h2>this is PASAILMON</h2> <h3>check mail :</h3> http://localhost:5000/login"
    mail.send(msg)
    return "Sent"
+
+
+
+# -------------------------------------------------------
+# @app.route('/api/v1/login', methods=['POST'])
+# @connect_sql()
+# def login(cursor):
+#     try:
+#         checkUser = json.loads(getLogin())
+#         f = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+checkUser['text']['userid'],headers= {'Authorization': 'a44ef9db-42c7-46a3-aea4-ee2fe6213ef3'})
+#         getName = f.json()
+#         if checkUser['text'] != 'fail' :
+#             sql = " SELECT per_id FROM useradmin WHERE emp_id = %s"
+#             cursor.execute(sql,(checkUser['text']['userid']))
+#             data = cursor.fetchall()
+#             columns = [column[0] for column in cursor.description]
+#             report = toJson(data, columns)
+#             if len(report) != 0 :
+#                 return jsonify({'message': 'success', "error_message": None, "result": {'user':getName['employee_detail'][0], 'permisstion': report[0]['per_id']}}),200
+#             else:
+#                 return jsonify({'message': 'success', "error_message": None, "result": {'user':getName['employee_detail'][0], 'permisstion':'1'}}),200
+#         else :
+#             return jsonify({'message': 'fail', "error_message":"no user", "result": None}),200
+#     except Exception as e:
+#         current_app.logger.info(e)
+#         return jsonify({'message': 'fail', "error_message": str(e), "result": None}),200
+# def getLogin():
+#     _data_new = request.json
+#     data_new = json.loads(decode(_data_new['data']))
+#     username = data_new['username']
+#     password = data_new['password']
+#     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/'+password,headers= {'Authorization': 'a44ef9db-42c7-46a3-aea4-ee2fe6213ef3'})
+#     if r:
+#         return json.dumps({'text':r.json()})
+#     else :
+#         return json.dumps({'text':'fail'})
