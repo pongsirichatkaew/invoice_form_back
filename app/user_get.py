@@ -1,6 +1,6 @@
 from Config.config import *
 
-# -----------------------login---------------------------------
+# -----------------------login---------------------------------every User
 @app.route('/api/v2/login', methods=['POST'])
 @connect_sql()
 def test_login(cursor):
@@ -30,7 +30,7 @@ def test_login(cursor):
         print ('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# # ---------------------menu-----------------------------------
+# ---------------------menu------------------------------------------every User
 @app.route('/api/v2/menu', methods=["POST"])
 @connect_sql()
 def menu(cursor):
@@ -43,32 +43,106 @@ def menu(cursor):
                 return jsonify({"msg":"Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
-                if cursor.execute(sql,(user_id))
-                    
-                
+                cursor.execute(sql,(user_id))
+                role = toJson(cursor.fetchall(),'i')
+                print ("SSS--------------",role[0]['i'])
+                if role[0]['i'] == 1:
+                    print("hh1")
+                    sql = """SELECT * FROM from_debt WHERE userid = %s"""
+                    cursor.execute(sql,(user_id))
+                    columns = [column[0] for column in cursor.description]
+                    result = toJson(cursor.fetchall(),columns)
+                    return jsonify(result)
+                elif role[0]['i'] == 2 or role[0]['i'] == 3:
+                    print("hhh2")
+                    sql = """SELECT * FROM from_debt"""
+                    cursor.execute(sql)
+                    columns = [column[0] for column in cursor.description]
+                    result = toJson(cursor.fetchall(),columns)
+                    return jsonify(result)
+                else: 
+                    print('H23')
+                    return "NOT"
+
     except Exception as e:
         print ('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# # ----------------------check_status_user---------------------------
-# @app.route('/api/v2/check')
-
-# # -----------------------------insert from-------------------
-# @app.route('/api/v2/insert_from', methods=["POST"])
+# ----------------------create from----------------------------------user Lv1
+@app.route('/api/v2/create', methods=["POST"])
+@connect_sql()
+def create(cursor):
+    try:
+        if not request.is_json:
+            return jsonify({"msg":"Missing JSON in request"}), 400
+        else:
+            id_from           = request.json.get('id_from',None)
+            id_customer       = request.json.get('id_customer',None)
+            customer_name     = request.json.get('customer_name',None)
+            Invoice_no        = request.json.get('Invoice_no',None)
+            ref_SO            = requset.json.get('ref_SO',None)
+            amount_no_vat     = requset.json.get('amount_no_vat',None)
+            service           = request.json.get('service',None)
+            from_year         = request.json.get('from_year',None)
+            from_month        = request.json.get('from_month',None)
+            to_year           = request.json.get('to_year',None)
+            to_month          = request.json.get('to_month',None)
+            change_income     = request.json.get('change_income',None)
+            full              = request.json.get('full',None)
+            full_text         = request.json.get('full_text',None)
+            some              = request.json.get('some',None)
+            some_text         = request.json.get('some_text',None)
+            not_change_income = request.json.get('not_change_income',None)
+            other             = request.json.get('other',None)
+            text              = request.json.get('text',None)
+            
+            id_user           = request.json.get('id_user',None)
+            if not id_user:
+                return jsonify({"msg":"Missing parameter"}), 400
+            else:
+                sql = """SELECT role FROM user WHERE userid = %s"""
+                if cursor.execute(sql,(user_id))
+                    
+    except Exception as e:
+        print ('error ===', e)
+        current_app.logger.info(e)
+        return jsonify(str(e))
+# ----------------------Load from--------------------------- every User
+@app.route('/api/v2/load_from', methods=["POST"])
+@connect_sql()
+def load_from(cursor):
+    try:
+        if not request.is_json:
+            return jsonify({"msg":"Missing JSON in request"}), 400
+        else:
+            user_id = request.json.get('user_id',None)
+            id_from = request.json.get('id_from',None)
+            if not user_id or not id_from:
+                return jsonify({"msg":"Missing parameter"}), 400
+            else:
+                sql = """SELECT role FROM user WHERE userid = %s"""
+                if cursor.execute(sql,(user_id)) :
+                    
+                    
+    except Exception as e:
+        print ('error ===', e)
+        current_app.logger.info(e)
+        return jsonify(str(e))
+# ----------------------edit from----------------------------------user Lv1
+# @app.route('/api/v2/edit', methods=["POST"])
 # @connect_sql()
-# def insert_from(cursor):
+# def edit(cursor):
 #     try:
-
-#     except Exception as e:
-#         print ('error ===', e)
-#         current_app.logger.info(e)
-#         return jsonify(str(e))
-# # ------------------------------update from-----------------------------
-# @app.route('/api/v2/insert_from', methods=["POST"])
-# @connect_sql()
-# def insert_from(cursor):
-#     try:
-
+#         if not request.is_json:
+#             return jsonify({"msg":"Missing JSON in request"}), 400
+#         else:
+#             user_id = request.json.get('user_id',None)
+#             if not user_id:
+#                 return jsonify({"msg":"Missing parameter"}), 400
+#             else:
+#                 sql = """SELECT role FROM user WHERE userid = %s"""
+#                 if cursor.execute(sql,(user_id))
+                    
 #     except Exception as e:
 #         print ('error ===', e)
 #         current_app.logger.info(e)
