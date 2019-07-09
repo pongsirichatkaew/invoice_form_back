@@ -82,7 +82,9 @@ def add_admin(cursor):
             return jsonify({"msg":"Missing JSON in request"}), 400
         else:
             user_id = request.json.get('user_id',None)
-            if not user_id:
+            user_id_add = request.json.get('user_id_add',None)
+            role_user = request.json.get('role',None)
+            if not user_id or not role_user or not user_id_add:
                 return jsonify({"msg":"Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
@@ -91,21 +93,35 @@ def add_admin(cursor):
                 print ("SSS--------------",role[0]['i'])
                 if role[0]['i'] == 1:
                     print("hh1")
-                    sql = """SELECT * FROM from_debt WHERE userid = %s"""
-                    cursor.execute(sql,(user_id))
-                    columns = [column[0] for column in cursor.description]
-                    result = toJson(cursor.fetchall(),columns)
-                    return jsonify(result)
-                elif role[0]['i'] == 2 or role[0]['i'] == 3:
-                    print("hhh2")
-                    sql = """SELECT * FROM from_debt"""
-                    cursor.execute(sql)
-                    columns = [column[0] for column in cursor.description]
-                    result = toJson(cursor.fetchall(),columns)
-                    return jsonify(result)
+                    return jsonify({"msg":"you cant add to this data"}),401
+                elif role[0]['i'] == 2 :
+                    if role_user == "3":
+                        print('roluser2',role_user)
+                        return jsonify({"msg":"you cant add to this data"}),401
+                    else:
+                        print('roluser3',role_user)
+                        r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+user_id_add,headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                        raw = r.text
+                        raw = json.loads(raw)
+                        print('kkoui',raw)
+                        if 'message' in raw:     
+                            return jsonify({"msg":"user not in scrope"}),401
+                        else:
+                            user = raw['employee_detail'][0]
+                            sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
+                            cursor.execute(sql,(role_user,user['engname'],user['englastname'],user['code']))
+                            return jsonify({"msg":"success"})
+                elif role[0]['i'] == 3 :
+                    r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+user_id_add,headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                    raw = r.text
+                    raw = json.loads(raw)
+                    user = raw['employee_detail'][0]
+                    sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
+                    cursor.execute(sql,(role_user,user['engname'],user['englastname'],user['code']))
+                    return jsonify(raw)
                 else: 
                     print('H23')
-                    return "NOT"
+                    return jsonify({"msg":"invalid user id"})
 
     except Exception as e:
         print ('error ===', e)
@@ -132,7 +148,7 @@ def menu(cursor):
                     return "NOT"
                 elif role[0]['i'] == 1:
                     print("hh1")
-                    sql = """SELECT * FROM debt WHERE userid = %s and status != 'สิ้นสุด'"""
+                    sql = """SELECT * FROM debt WHERE id_user = %s and status != 'สิ้นสุด'"""
                     cursor.execute(sql,(user_id))
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(),columns)
@@ -271,7 +287,7 @@ def approve(cursor):
                 sql = """UPDATE `debt` SET (`status`,`approved_by`,`edit_at`,`comment`)"""
                 cursor.execute(sql,(status,id_user,edit_at,comment))
             else:
-                return "wrong id"
+                return jsonify("wrong id"),401
     except Exception as e:
         print ('error ===', e)
         current_app.logger.info(e)
