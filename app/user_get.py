@@ -240,25 +240,46 @@ def edit(cursor):
                 sql = """SELECT role FROM user WHERE userid = %s"""
                 cursor.execute(sql,(id_user))
                 role = toJson(cursor.fetchall(),'i')
-                if role == '1' and status == 'แก้ไข':
+                if role[0]['i'] == '1':
                     sql = """UPDATE `debt` SET edit_status = '0',status = 'สิ้นสุด' WHERE id_from = %s and edit_status = '1'"""
                     cursor.execute(sql,(id_from))
                     sql = """INSERT INTO `debt` (`id`, `id_user`, `id_from`, `status`, `approved_by`, `create_at`, `edit_at`, `comment`, `id_customer`, `customer_name`, `invoice_no`, `ref_so`, `amount_no_vat`, `service`, `from_year`, `from_month`, `to_year`, `to_month`, `change_income`, `full`, `full_text`, `some`, `some_text`, `not_change_income`, `other`, `other_text`, `debt_text`, `edit_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                     cursor.execute(sql,(None, id_user, id_from, 'รออนุมัติ', None, create_at, None, None, id_customer, customer_name, invoice_no, ref_so, amount_no_vat, service, from_year, from_month, to_year, to_month, change_income, full, full_text, some, some_text, not_change_income, other, other_text, debt_text, edit_status))
                     print ("SSS--------------")
                     return jsonify("ss")
-                elif role == '2' or role == '3':
-                    sql = """UPDATE `debt` SET (`status`, `approved_by`, `edit_at`, `comment`)"""
-                    cursor.execute(sql,(status,approved_by,edit_at,comment))
                 else:
                     return jsonify("nss")
     except Exception as e:
         print ('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
+# # ----------------------------approve from--------------------------
+@app.route('/api/v2/approve', methods=["POST"])
+@connect_sql()
+def approve(cursor):
+    try:
+        if not request.is_json:
+            return jsonify({"msg":"Missing JSON in request"}), 400
+        else:
+            status  = request.json.get('status',None)
+            edit_at    = request.json.get('edit_at',None)
+            id_user = request.json.get('id_user',None)
+            comment = request.json.get('comment',None)
+            sql = """SELECT role FROM user WHERE userid = %s"""
+            cursor.execute(sql,(id_user))
+            role = toJson(cursor.fetchall(),'i')
+            if role[0]['i'] == 2 or role[0]['i'] == 3:
+                sql = """UPDATE `debt` SET (`status`,`approved_by`,`edit_at`,`comment`)"""
+                cursor.execute(sql,(status,id_user,edit_at,comment))
+            else:
+                return "wrong id"
+    except Exception as e:
+        print ('error ===', e)
+        current_app.logger.info(e)
+        return jsonify(str(e))
 # --------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------
-# # ----------------------------approve from--------------------------
+
 
 # @app.route('/jwt',methods=['POST'])
 # @connect_sql()
