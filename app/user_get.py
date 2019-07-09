@@ -123,28 +123,28 @@ def menu(cursor):
             if not user_id:
                 return jsonify({"msg":"Missing parameter"}), 400
             else:
-                sql = """SELECT role FROM user WHERE userid = %s"""
+                sql = """SELECT role FROM user WHERE userid = %s """
                 cursor.execute(sql,(user_id))
                 role = toJson(cursor.fetchall(),'i')
-                print ("SSS--------------",role[0]['i'])
-                if role[0]['i'] == 1:
+                print ("SSS--------------",len(role))
+                if len(role) == 0  : 
+                    print('H23')
+                    return "NOT"
+                elif role[0]['i'] == 1:
                     print("hh1")
-                    sql = """SELECT * FROM debt WHERE userid = %s"""
+                    sql = """SELECT * FROM debt WHERE userid = %s and status != 'สิ้นสุด'"""
                     cursor.execute(sql,(user_id))
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(),columns)
                     return jsonify(result)
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
-                    sql = """SELECT * FROM debt"""
+                    sql = """SELECT * FROM debt WHERE status !='สิ้นสุด'"""
                     cursor.execute(sql)
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(),columns)
                     return jsonify(result)
-                else: 
-                    print('H23')
-                    return "NOT"
-
+                
     except Exception as e:
         print ('error ===', e)
         current_app.logger.info(e)
