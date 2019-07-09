@@ -233,7 +233,6 @@ def edit(cursor):
             other_text        = request.json.get('other_text',None)         #22 Y
             debt_text         = request.json.get('debt_text',None)          #23 Y
             edit_status       = '1'                                         #24
-            old_status        = '0'
             if not id_user or not create_at or not id_from or not id_customer or not customer_name or not invoice_no or not ref_so or not amount_no_vat or not service or not from_year or not from_month or not to_year or not to_month or not debt_text: 
                 return jsonify({"msg":"Missing parameter"}), 400
             else:
@@ -241,10 +240,10 @@ def edit(cursor):
                 cursor.execute(sql,(id_user))
                 role = toJson(cursor.fetchall(),'i')
                 if role[0]['i'] == '1':
-                    sql = """UPDATE `debt` SET edit_status = '0',status = 'สิ้นสุด' WHERE id_from = %s and edit_status = '1'"""
+                    sql = """UPDATE `debt` SET edit_status = '0',status = 'สิ้นสุด' WHERE id_from = %s and edit_status = '0'"""
                     cursor.execute(sql,(id_from))
                     sql = """INSERT INTO `debt` (`id`, `id_user`, `id_from`, `status`, `approved_by`, `create_at`, `edit_at`, `comment`, `id_customer`, `customer_name`, `invoice_no`, `ref_so`, `amount_no_vat`, `service`, `from_year`, `from_month`, `to_year`, `to_month`, `change_income`, `full`, `full_text`, `some`, `some_text`, `not_change_income`, `other`, `other_text`, `debt_text`, `edit_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-                    cursor.execute(sql,(None, id_user, id_from, 'รออนุมัติ', None, create_at, None, None, id_customer, customer_name, invoice_no, ref_so, amount_no_vat, service, from_year, from_month, to_year, to_month, change_income, full, full_text, some, some_text, not_change_income, other, other_text, debt_text, edit_status))
+                    cursor.execute(sql,(None, id_user, id_from, status, None, create_at, None, None, id_customer, customer_name, invoice_no, ref_so, amount_no_vat, service, from_year, from_month, to_year, to_month, change_income, full, full_text, some, some_text, not_change_income, other, other_text, debt_text, edit_status))
                     print ("SSS--------------")
                     return jsonify("ss")
                 else:
