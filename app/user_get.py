@@ -1,6 +1,6 @@
 from Config.config import *
 
-# -----------------------login---------------------------------every User
+# -----------------------login---------------------------------every User -c
 @app.route('/api/v2/login', methods=['POST'])
 @connect_sql()
 def test_login(cursor):
@@ -36,7 +36,7 @@ def test_login(cursor):
         print('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# ----------------------------- Show Admin ---------------------------User Level 2&3
+# ----------------------------- Show Admin ---------------------------User Level 2&3 -c
 @app.route('/api/v2/show_admin', methods=["POST"])
 @connect_sql()
 def show_admin(cursor):
@@ -81,7 +81,7 @@ def show_admin(cursor):
         print ('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# ----------------------------- Add Admin ---------------------------User Level 2&3
+# ----------------------------- Add Admin ---------------------------User Level 2&3 -c
 @app.route('/api/v2/add_admin', methods=["POST"])
 @connect_sql()
 def add_admin(cursor):
@@ -104,42 +104,61 @@ def add_admin(cursor):
                     return jsonify({"msg": "you cant add to this data"}), 401
                 elif role[0]['i'] == 2:
                     if role_user == "3":
-                        print('roluser2', role_user)
                         return jsonify({"msg": "you cant add to this data"}), 401
                     else:
-                        print('roluser3', role_user)
                         r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+user_id_add, headers={
                                          'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                         raw = r.text
                         raw = json.loads(raw)
-                        print(raw)
                         if 'message' in raw:
                             return jsonify({"msg": "user not in scrope"}), 401
                         else:
-                            user = raw['employee_detail'][0]
-                            sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
-                            cursor.execute(
-                                sql, (role_user, user['engname'], user['englastname'], user['code']))
-                            return jsonify({"msg": "success"})
+                            sql = """SELECT role FROM user WHERE userid=%s"""
+                            cursor.execute(sql,(user_id_add)) 
+                            inrole = toJson(cursor.fetchall(), 'i')
+                            if inrole[0]['i'] == 3:
+                                return jsonify({"msg":"this user have role upper you"}), 401
+                            elif inrole[0]['i'] == 2:
+                                return jsonify({"msg":"have this user in site"}), 401
+                            elif inrole[0]['i'] == 1:
+                                user = raw['employee_detail'][0]
+                                sql = """UPDATE `user` SET role = %s WHERE userid =%s"""
+                                cursor.execute(sql, (role_user, user['code']))
+                                return jsonify({"msg": "success"})
+                            else:
+                                user = raw['employee_detail'][0]
+                                sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
+                                cursor.execute(sql, (role_user, user['engname'], user['englastname'], user['code']))
+                                return jsonify({"msg": "success"})
                 elif role[0]['i'] == 3:
                     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+user_id_add,
                                      headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                     raw = r.text
                     raw = json.loads(raw)
-                    user = raw['employee_detail'][0]
-                    sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
-                    cursor.execute(
-                        sql, (role_user, user['engname'], user['englastname'], user['code']))
-                    return jsonify(raw)
+                    if 'message' in raw:
+                        return jsonify({"msg": "user not in scrope"}), 401
+                    else:
+                        sql = """SELECT role FROM user WHERE userid=%s"""
+                        cursor.execute(sql,(user_id_add))
+                        inrole = toJson(cursor.fetchall(), 'i')
+                        if inrole:
+                            user = raw['employee_detail'][0]
+                            sql = """UPDATE `user` SET role = %s WHERE userid =%s"""
+                            cursor.execute(sql, (role_user, user['code']))
+                            return jsonify({"msg": "success"})
+                        else:
+                            user = raw['employee_detail'][0]
+                            sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
+                            cursor.execute(sql, (role_user, user['engname'], user['englastname'], user['code']))
+                            return jsonify({"msg": "success"})
                 else:
                     print('H23')
                     return jsonify({"msg": "invalid user id"})
-
     except Exception as e:
         print('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# ---------------------menu------------------------------------------every User
+# ---------------------menu------------------------------------------every User -c
 @app.route('/api/v2/menu', methods=["POST"])
 @connect_sql()
 def menu(cursor):
