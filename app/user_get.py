@@ -196,7 +196,7 @@ def menu(cursor):
         print('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
-# ----------------------create from----------------------------------user Lv1 #C
+# ----------------------create from----------------------------------user Lv1 -C
 @app.route('/api/v2/create', methods=["POST"])
 @connect_sql()
 def create(cursor):
@@ -257,6 +257,7 @@ def edit(cursor):
         if not request.is_json:
             return jsonify({"msg": "Missing JSON in request"}), 400
         else:
+            old_id_from = request.json.get('old_id_from', None)
             id_user = request.json.get('id_user', None)  # 1  Y
             id_from = request.json.get('id_from', None)  # 2  Y
             status = 'รออนุมัติ'  # 3  Y
@@ -277,8 +278,7 @@ def edit(cursor):
             full_text = request.json.get('full_text', None)  # 17 Y
             some = request.json.get('some', None)  # 18 Y
             some_text = request.json.get('some_text', None)  # 19 Y
-            not_change_income = request.json.get(
-                'not_change_income', None)  # 20 Y
+            not_change_income = request.json.get('not_change_income', None)  # 20 Y
             other = request.json.get('other', None)  # 21 Y
             other_text = request.json.get('other_text', None)  # 22 Y
             debt_text = request.json.get('debt_text', None)  # 23 Y
@@ -292,7 +292,7 @@ def edit(cursor):
                 print('id_from',  id_from)
                 if role[0]['i'] == 1:
                     sql = """UPDATE `debt` SET edit_status = '0',status = 'สิ้นสุด' WHERE id_from = %s and edit_status = '1'"""
-                    cursor.execute(sql, (id_from,))
+                    cursor.execute(sql, (old_id_from))
                     sql = """INSERT INTO `debt` (`id`, `id_user`, `id_from`, `status`, `approved_by`, `create_at`, `edit_at`, `comment`, `id_customer`, `customer_name`, `invoice_no`, `ref_so`, `amount_no_vat`, `service`, `from_year`, `from_month`, `to_year`, `to_month`, `change_income`, `full`, `full_text`, `some`, `some_text`, `not_change_income`, `other`, `other_text`, `debt_text`, `edit_status`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                     cursor.execute(sql, (None, id_user, id_from, status, None, create_at, None, None, id_customer, customer_name, invoice_no, ref_so, amount_no_vat, service,
                                          from_year, from_month, to_year, to_month, change_income, full, full_text, some, some_text, not_change_income, other, other_text, debt_text, edit_status))
