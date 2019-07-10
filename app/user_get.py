@@ -313,6 +313,7 @@ def approve(cursor):
             return jsonify({"msg": "Missing JSON in request"}), 400
         else:
             status = request.json.get('status', None)
+            id_from = request.json.get('id_from',None)
             edit_at = request.json.get('edit_at', None)
             id_user = request.json.get('id_user', None)
             comment = request.json.get('comment', None)
@@ -320,10 +321,46 @@ def approve(cursor):
             cursor.execute(sql, (id_user))
             role = toJson(cursor.fetchall(), 'i')
             if role[0]['i'] == 2 or role[0]['i'] == 3:
-                sql = """UPDATE `debt` SET (`status`,`approved_by`,`edit_at`,`comment`)"""
-                cursor.execute(sql, (status, id_user, edit_at, comment))
+                sql = """UPDATE `debt` SET status = %s,approved_by = %s,edit_at = %s,comment = %s WHERE id_from = %s"""
+                cursor.execute(sql, (status, id_user, edit_at, comment, id_from))
+                return jsonify("SS")
             else:
                 return jsonify("wrong id"), 401
+    except Exception as e:
+        print('error ===', e)
+        current_app.logger.info(e)
+        return jsonify(str(e))
+# # ----------------------------confirm from--------------------------
+@app.route('/api/v2/confirm', methods=["POST"])
+@connect_sql()
+def confirm(cursor):
+    try:
+        if not request.is_json:
+            return jsonify({"msg": "Missing JSON in request"}), 400
+        else:
+            id_from = request.json.get('id_from',None)
+            id_user = request.json.get('id_user', None)
+            password = request.json.get('password', None)
+            
+            if not id_from or not id_user :
+                return jsonify({"msg": "Missing parameter"}), 400
+            else:
+                sql = """SELECT role FROM user WHERE userid = %s"""
+                cursor.execute(sql, (id_user))
+                role = toJson(cursor.fetchall(), 'i')
+                if role[0]['i'] == 2 or role[0]['i'] == 3:
+                    sql = """SELECT email FROM user left JOIN debt ON debt.id_user = user.userid WHERE id_from = %s"""
+                    cursor.execute(sql,(id_from))
+                    email = toJson(cursor.fetchall(), 'i')
+                    r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                    if r:
+                        sql = """UPDATE `debt` SET status = 'สิ้นสุด' WHERE id_from = %s"""
+                        cursor.execute(sql, (id_from))
+                        return jsonify("SS")
+                    else :
+                        return jsonify("wrong password"), 401
+                else:
+                    return jsonify("wrong id"), 401
     except Exception as e:
         print('error ===', e)
         current_app.logger.info(e)
