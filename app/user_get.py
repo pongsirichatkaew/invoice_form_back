@@ -41,45 +41,63 @@ def test_login(cursor):
 def show_admin(cursor):
     try:
         if not request.is_json:
-            return jsonify({"msg":"Missing JSON in request"}), 400
+            return jsonify({"msg": "Missing JSON in request"}), 400
         else:
-            user_id = request.json.get('user_id',None)
+            user_id = request.json.get('user_id', None)
             if not user_id:
-                return jsonify({"msg":"Missing parameter"}), 400
+                return jsonify({"msg": "Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
-                cursor.execute(sql,(user_id))
-                role = toJson(cursor.fetchall(),'i')
-                print ("SSS--------------",role[0]['i'])
+                cursor.execute(sql, (user_id))
+                role = toJson(cursor.fetchall(), 'i')
+                print("SSS--------------", role[0]['i'])
                 if role[0]['i'] == 1:
                     print("hh1")
-                    return jsonify({"msg":"you cant access to this data"}),401
+                    return jsonify({"msg": "you cant access to this data"}), 401
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
+<<<<<<< HEAD
                     sql = """SELECT userid FROM user where role <= %s and role >'1'"""
                     cursor.execute(sql,(role[0]['i']))
+=======
+                    sql = """SELECT userid , role FROM user where role <= %s and role > 1"""
+                    cursor.execute(sql, (role[0]['i']))
+>>>>>>> 3e7c46e67820d7709fdb1e0c1b735c3e5f9a10a4
                     columns = [column[0] for column in cursor.description]
-                    result = toJson(cursor.fetchall(),columns)
-                    arr  =[]
+                    result = toJson(cursor.fetchall(), columns)
+                    print(result)
+                    arr = []
                     for x in result:
-                        r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+x['userid'],headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                        r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+x['userid'], headers={
+                                         'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                         if r:
                             raw = r.text
                             raw = json.loads(raw)
-                            print(raw)
-                            arr.append(raw['employee_detail'][0])
-                            print(arr)
+                            data = {
+                                "role": x['role'],
+                                "code": raw['employee_detail'][0]['code'],
+                                "thainame":  raw['employee_detail'][0]['thainame'],
+                                "thlastname":  raw['employee_detail'][0]['thlastname'],
+                                "engname": raw['employee_detail'][0]['engname'],
+                                "englastname": raw['employee_detail'][0]['englastname'],
+                                "email": raw['employee_detail'][0]['email'],
+                                "phonenumber": raw['employee_detail'][0]['phonenumber'],
+                                "positionname": raw['employee_detail'][0]['positionname'],
+                            }
+                            arr.append(data)
+
                         else:
                             continue
-                    return jsonify({"msg":arr})
-                else: 
+                    return jsonify({"msg": arr})
+                else:
                     print('H23')
-                    return jsonify({"msg":"invalid user id"})
+                    return jsonify({"msg": "invalid user id"})
 
     except Exception as e:
-        print ('error ===', e)
+        print('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
+
 # ----------------------------- Add Admin ---------------------------User Level 2&3 -c
 @app.route('/api/v2/add_admin', methods=["POST"])
 @connect_sql()
@@ -348,12 +366,12 @@ def confirm(cursor):
                 cursor.execute(sql, (id_user))
                 role = toJson(cursor.fetchall(), 'i')
                 if role[0]['i'] == 2 or role[0]['i'] == 3:
-                    sql = """SELECT email FROM user left JOIN debt ON debt.id_user = user.userid WHERE id_from = %s"""
+                    sql = """SELECT email FROM debt left JOIN user ON debt.id_user = user.userid WHERE debt.id_from = %s and status ='อนุมัติ'"""
                     cursor.execute(sql,(id_from))
                     email = toJson(cursor.fetchall(), 'i')
                     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                     if r:
-                        sql = """UPDATE `debt` SET status = 'สิ้นสุด' WHERE id_from = %s"""
+                        sql = """UPDATE `debt` SET status = 'สิ้นสุด',edit_status = '0' WHERE id_from = %s"""
                         cursor.execute(sql, (id_from))
                         return jsonify("SS")
                     else :
