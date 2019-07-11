@@ -361,7 +361,7 @@ def confirm(cursor):
                 cursor.execute(sql, (id_user))
                 role = toJson(cursor.fetchall(), 'i')
                 if role[0]['i'] == 2 or role[0]['i'] == 3:
-                    sql = """SELECT email FROM user left JOIN debt ON debt.id_user = user.userid WHERE id_from = %s"""
+                    sql = """SELECT email FROM debt left JOIN user ON debt.id_user = user.userid WHERE debt.id_from = %s and status ='อนุมัติ'"""
                     cursor.execute(sql,(id_from))
                     email = toJson(cursor.fetchall(), 'i')
                     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
