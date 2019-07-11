@@ -41,45 +41,58 @@ def test_login(cursor):
 def show_admin(cursor):
     try:
         if not request.is_json:
-            return jsonify({"msg":"Missing JSON in request"}), 400
+            return jsonify({"msg": "Missing JSON in request"}), 400
         else:
-            user_id = request.json.get('user_id',None)
+            user_id = request.json.get('user_id', None)
             if not user_id:
-                return jsonify({"msg":"Missing parameter"}), 400
+                return jsonify({"msg": "Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
-                cursor.execute(sql,(user_id))
-                role = toJson(cursor.fetchall(),'i')
-                print ("SSS--------------",role[0]['i'])
+                cursor.execute(sql, (user_id))
+                role = toJson(cursor.fetchall(), 'i')
+                print("SSS--------------", role[0]['i'])
                 if role[0]['i'] == 1:
                     print("hh1")
-                    return jsonify({"msg":"you cant access to this data"}),401
+                    return jsonify({"msg": "you cant access to this data"}), 401
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
-                    sql = """SELECT userid FROM user where role <= %s and role ='1'"""
-                    cursor.execute(sql,(role[0]['i']))
+                    sql = """SELECT userid , role FROM user where role <= %s and role > 1"""
+                    cursor.execute(sql, (role[0]['i']))
                     columns = [column[0] for column in cursor.description]
-                    result = toJson(cursor.fetchall(),columns)
-                    arr  =[]
+                    result = toJson(cursor.fetchall(), columns)
+                    print(result)
+                    arr = []
                     for x in result:
-                        r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+x['userid'],headers= {'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                        r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+x['userid'], headers={
+                                         'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                         if r:
                             raw = r.text
                             raw = json.loads(raw)
-                            print(raw)
-                            arr.append(raw['employee_detail'][0])
-                            print(arr)
+                            data = {
+                                "role": x['role'],
+                                "code": raw['employee_detail'][0]['code'],
+                                "thainame":  raw['employee_detail'][0]['thainame'],
+                                "thlastname":  raw['employee_detail'][0]['thlastname'],
+                                "engname": raw['employee_detail'][0]['engname'],
+                                "englastname": raw['employee_detail'][0]['englastname'],
+                                "email": raw['employee_detail'][0]['email'],
+                                "phonenumber": raw['employee_detail'][0]['phonenumber'],
+                                "positionname": raw['employee_detail'][0]['positionname'],
+                            }
+                            arr.append(data)
+
                         else:
                             continue
-                    return jsonify({"msg":arr})
-                else: 
+                    return jsonify({"msg": arr})
+                else:
                     print('H23')
-                    return jsonify({"msg":"invalid user id"})
+                    return jsonify({"msg": "invalid user id"})
 
     except Exception as e:
-        print ('error ===', e)
+        print('error ===', e)
         current_app.logger.info(e)
         return jsonify(str(e))
+
 # ----------------------------- Add Admin ---------------------------User Level 2&3 -c
 @app.route('/api/v2/add_admin', methods=["POST"])
 @connect_sql()
