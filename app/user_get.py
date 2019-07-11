@@ -27,7 +27,7 @@ def test_login(cursor):
                         sql = """INSERT INTO `user`(name,lastname,userid,email) VALUES (%s,%s,%s,%s)"""
                         cursor.execute(
                             sql, (raw['name'], raw['lastname'], raw['userid'], username)) 
-                        raw.update({"role": "1"})
+                        raw.update({"role": 1})
                         return jsonify(raw), 200
                 else:
                     return jsonify({"msg": "not have user"}), 401
@@ -320,7 +320,7 @@ def approve(cursor):
             cursor.execute(sql, (id_user))
             role = toJson(cursor.fetchall(), 'i')
             if role[0]['i'] == 2 or role[0]['i'] == 3:
-                sql = """UPDATE `debt` SET status = %s,approved_by = %s,edit_at = %s,comment = %s WHERE id_from = %s"""
+                sql = """UPDATE `debt` SET status = %s,approved_by = %s,edit_at = %s,comment = %s WHERE id_from = %s and status ='รออนุมัติ'"""
                 cursor.execute(sql, (status, id_user, edit_at, comment, id_from))
                 return jsonify("SS")
             else:
