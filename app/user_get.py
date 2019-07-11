@@ -56,13 +56,8 @@ def show_admin(cursor):
                     return jsonify({"msg": "you cant access to this data"}), 401
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
-<<<<<<< HEAD
-                    sql = """SELECT userid FROM user where role <= %s and role >'1'"""
-                    cursor.execute(sql,(role[0]['i']))
-=======
                     sql = """SELECT userid , role FROM user where role <= %s and role > 1"""
                     cursor.execute(sql, (role[0]['i']))
->>>>>>> 3e7c46e67820d7709fdb1e0c1b735c3e5f9a10a4
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(), columns)
                     print(result)
@@ -137,7 +132,8 @@ def add_admin(cursor):
                                 if inrole[0]['i'] == 3:
                                     return jsonify({"msg": "this user have role upper you"}), 401
                                 elif inrole[0]['i'] == 2:
-                                    return jsonify({"msg": "have this user in site"}), 401
+                                    
+                                    return jsonify({"msg": "สิทธิ์การจัดการไม่ถูกต้อง"}), 401
                                 elif inrole[0]['i'] == 1:
                                     user = raw['employee_detail'][0]
                                     sql = """UPDATE user SET role = %s WHERE userid =%s"""
