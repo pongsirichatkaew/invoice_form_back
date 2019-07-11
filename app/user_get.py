@@ -134,7 +134,8 @@ def add_admin(cursor):
                                 if inrole[0]['i'] == 3:
                                     return jsonify({"msg": "this user have role upper you"}), 401
                                 elif inrole[0]['i'] == 2:
-                                    return jsonify({"msg": "have this user in site"}), 401
+                                    
+                                    return jsonify({"msg": "สิทธิ์การจัดการไม่ถูกต้อง"}), 401
                                 elif inrole[0]['i'] == 1:
                                     user = raw['employee_detail'][0]
                                     sql = """UPDATE user SET role = %s WHERE userid =%s"""
