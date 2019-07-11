@@ -56,7 +56,7 @@ def show_admin(cursor):
                     return jsonify({"msg":"you cant access to this data"}),401
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
-                    sql = """SELECT userid FROM user where role <= %s and role ='1'"""
+                    sql = """SELECT userid FROM user where role <= %s and role >'1'"""
                     cursor.execute(sql,(role[0]['i']))
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(),columns)
