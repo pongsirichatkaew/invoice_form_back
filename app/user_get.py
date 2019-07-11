@@ -366,7 +366,7 @@ def confirm(cursor):
                     email = toJson(cursor.fetchall(), 'i')
                     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                     if r:
-                        sql = """UPDATE `debt` SET status = 'สิ้นสุด' WHERE id_from = %s"""
+                        sql = """UPDATE `debt` SET status = 'สิ้นสุด',edit_status = '0' WHERE id_from = %s"""
                         cursor.execute(sql, (id_from))
                         return jsonify("SS")
                     else :
