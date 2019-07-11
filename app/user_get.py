@@ -13,7 +13,8 @@ def test_login(cursor):
             if not username or not password:
                 return jsonify({"msg": "Missing parameter"}), 400
             else:
-                r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/' +password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+username+'/' +
+                                 password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                 if r:
                     raw = r.text
                     raw = json.loads(raw)
@@ -26,7 +27,7 @@ def test_login(cursor):
                     else:
                         sql = """INSERT INTO `user`(name,lastname,userid,email) VALUES (%s,%s,%s,%s)"""
                         cursor.execute(
-                            sql, (raw['name'], raw['lastname'], raw['userid'], username)) 
+                            sql, (raw['name'], raw['lastname'], raw['userid'], username))
                         raw.update({"role": 1})
                         return jsonify(raw), 200
                 else:
@@ -56,13 +57,8 @@ def show_admin(cursor):
                     return jsonify({"msg": "you cant access to this data"}), 401
                 elif role[0]['i'] == 2 or role[0]['i'] == 3:
                     print("hhh2")
-<<<<<<< HEAD
-                    sql = """SELECT userid FROM user where role <= %s and role >'1'"""
-                    cursor.execute(sql,(role[0]['i']))
-=======
                     sql = """SELECT userid , role FROM user where role <= %s and role > 1"""
                     cursor.execute(sql, (role[0]['i']))
->>>>>>> 3e7c46e67820d7709fdb1e0c1b735c3e5f9a10a4
                     columns = [column[0] for column in cursor.description]
                     result = toJson(cursor.fetchall(), columns)
                     print(result)
@@ -131,8 +127,9 @@ def add_admin(cursor):
                             return jsonify({"msg": "user not in scrope"}), 401
                         else:
                             sql = """SELECT role FROM user WHERE userid=%s"""
-                            cursor.execute(sql,(user_id_add))
+                            cursor.execute(sql, (user_id_add))
                             inrole = toJson(cursor.fetchall(), 'i')
+                            print('inrole',inrole)
                             if inrole:
                                 if inrole[0]['i'] == 3:
                                     return jsonify({"msg": "this user have role upper you"}), 401
@@ -141,12 +138,14 @@ def add_admin(cursor):
                                 elif inrole[0]['i'] == 1:
                                     user = raw['employee_detail'][0]
                                     sql = """UPDATE user SET role = %s WHERE userid =%s"""
-                                    cursor.execute(sql, (role_user, user['code']))
+                                    cursor.execute(
+                                        sql, (role_user, user['code']))
                                     return jsonify({"msg": "success"})
                             else:
                                 user = raw['employee_detail'][0]
                                 sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
-                                cursor.execute(sql, (role_user, user['engname'], user['englastname'], user['code']))
+                                cursor.execute(
+                                    sql, (role_user, user['engname'], user['englastname'], user['code']))
                                 return jsonify({"msg": "success"})
                 elif role[0]['i'] == 3:
                     r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/employee/'+user_id_add,
@@ -157,7 +156,7 @@ def add_admin(cursor):
                         return jsonify({"msg": "user not in scrope"}), 401
                     else:
                         sql = """SELECT role FROM user WHERE userid=%s"""
-                        cursor.execute(sql,(user_id_add))
+                        cursor.execute(sql, (user_id_add))
                         inrole = toJson(cursor.fetchall(), 'i')
                         if inrole:
                             user = raw['employee_detail'][0]
@@ -167,7 +166,8 @@ def add_admin(cursor):
                         else:
                             user = raw['employee_detail'][0]
                             sql = """INSERT INTO `user`(role,name,lastname,userid) VALUES (%s,%s,%s,%s)"""
-                            cursor.execute(sql, (role_user, user['engname'], user['englastname'], user['code']))
+                            cursor.execute(
+                                sql, (role_user, user['engname'], user['englastname'], user['code']))
                             return jsonify({"msg": "success"})
                 else:
                     print('H23')
@@ -242,7 +242,8 @@ def create(cursor):
             full_text = request.json.get('full_text', None)  # 17 Y
             some = request.json.get('some', None)  # 18 Y
             some_text = request.json.get('some_text', None)  # 19 Y
-            not_change_income = request.json.get('not_change_income', None)  # 20 Y
+            not_change_income = request.json.get(
+                'not_change_income', None)  # 20 Y
             other = request.json.get('other', None)  # 21 Y
             other_text = request.json.get('other_text', None)  # 22 Y
             debt_text = request.json.get('debt_text', None)  # 23 Y
@@ -295,7 +296,8 @@ def edit(cursor):
             full_text = request.json.get('full_text', None)  # 17 Y
             some = request.json.get('some', None)  # 18 Y
             some_text = request.json.get('some_text', None)  # 19 Y
-            not_change_income = request.json.get('not_change_income', None)  # 20 Y
+            not_change_income = request.json.get(
+                'not_change_income', None)  # 20 Y
             other = request.json.get('other', None)  # 21 Y
             other_text = request.json.get('other_text', None)  # 22 Y
             debt_text = request.json.get('debt_text', None)  # 23 Y
@@ -330,7 +332,7 @@ def approve(cursor):
             return jsonify({"msg": "Missing JSON in request"}), 400
         else:
             status = request.json.get('status', None)
-            id_from = request.json.get('id_from',None)
+            id_from = request.json.get('id_from', None)
             edit_at = request.json.get('edit_at', None)
             id_user = request.json.get('id_user', None)
             comment = request.json.get('comment', None)
@@ -339,7 +341,8 @@ def approve(cursor):
             role = toJson(cursor.fetchall(), 'i')
             if role[0]['i'] == 2 or role[0]['i'] == 3:
                 sql = """UPDATE `debt` SET status = %s,approved_by = %s,edit_at = %s,comment = %s WHERE id_from = %s and status ='รออนุมัติ'"""
-                cursor.execute(sql, (status, id_user, edit_at, comment, id_from))
+                cursor.execute(
+                    sql, (status, id_user, edit_at, comment, id_from))
                 return jsonify("SS")
             else:
                 return jsonify("wrong id"), 401
@@ -355,11 +358,11 @@ def confirm(cursor):
         if not request.is_json:
             return jsonify({"msg": "Missing JSON in request"}), 400
         else:
-            id_from = request.json.get('id_from',None)
+            id_from = request.json.get('id_from', None)
             id_user = request.json.get('id_user', None)
             password = request.json.get('password', None)
-            
-            if not id_from or not id_user :
+
+            if not id_from or not id_user:
                 return jsonify({"msg": "Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
@@ -367,14 +370,15 @@ def confirm(cursor):
                 role = toJson(cursor.fetchall(), 'i')
                 if role[0]['i'] == 2 or role[0]['i'] == 3:
                     sql = """SELECT email FROM debt left JOIN user ON debt.id_user = user.userid WHERE debt.id_from = %s and status ='อนุมัติ'"""
-                    cursor.execute(sql,(id_from))
+                    cursor.execute(sql, (id_from))
                     email = toJson(cursor.fetchall(), 'i')
-                    r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
+                    r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/' + email[0]['i'] + '/' + password, headers={
+                                     'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
                     if r:
                         sql = """UPDATE `debt` SET status = 'สิ้นสุด',edit_status = '0' WHERE id_from = %s"""
                         cursor.execute(sql, (id_from))
                         return jsonify("SS")
-                    else :
+                    else:
                         return jsonify("wrong password"), 401
                 else:
                     return jsonify("wrong id"), 401
