@@ -354,22 +354,21 @@ def confirm(cursor):
             id_user = request.json.get('id_user', None)
             password = request.json.get('password', None)
             
-            if not id_from or not id_user :
+            if not id_from or not id_user or not password :
                 return jsonify({"msg": "Missing parameter"}), 400
             else:
                 sql = """SELECT role FROM user WHERE userid = %s"""
                 cursor.execute(sql, (id_user))
                 role = toJson(cursor.fetchall(), 'i')
                 if role[0]['i'] == 2 or role[0]['i'] == 3:
-                    sql = """SELECT email FROM debt left JOIN user ON debt.id_user = user.userid WHERE debt.id_from = %s and status ='อนุมัติ'"""
-                    cursor.execute(sql,(id_from))
-                    email = toJson(cursor.fetchall(), 'i')
-                    r = requests.get('http://hr.devops.inet.co.th:9999/api/v1/login/'+ email[0]['i'] + '/' + password, headers={'Authorization': 'd0aa5a1d-a58b-4a45-9c99-1e1007408ef4'})
-                    if r:
+                    sql = """SELECT id_from FROM debt  WHERE id_from = %s and id_user =%s and edit_status = '1'"""
+                    cursor.execute(sql,(id_from,password))
+                    id_from2 = toJson(cursor.fetchall(), 'i')
+                    if id_from2:
                         sql = """UPDATE `debt` SET status = 'สิ้นสุด',edit_status = '0' WHERE id_from = %s"""
                         cursor.execute(sql, (id_from))
                         return jsonify("SS")
-                    else :
+                    else:
                         return jsonify("wrong password"), 401
                 else:
                     return jsonify("wrong id"), 401
